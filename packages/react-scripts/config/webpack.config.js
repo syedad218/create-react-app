@@ -292,7 +292,7 @@ module.exports = function (webpackEnv) {
         cacheGroups: {
           vendors: false,
           bigVendor: {
-            test: /[\\/]node_modules[\\/](react|react-dom|pusher-js|core-js|yup|styled-components)[\\/]/,
+            test: /[\\/]node_modules[\\/](react|react-dom|pusher-js|core-js|yup|styled-components|redux-saga)[\\/]/,
             name: 'bigVendor',
             chunks: 'all',
             reuseExistingChunk: true,
