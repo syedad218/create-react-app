@@ -290,18 +290,46 @@ module.exports = function (webpackEnv) {
         maxInitialRequests: Infinity,
         minSize: 0,
         cacheGroups: {
+          vendors: false,
+          bigVendor: {
+            test: /[\\/]node_modules[\\/](react|react-dom|pusher-js|core-js|yup|styled-components)[\\/]/,
+            name: 'bigVendor',
+            chunks: 'all',
+            reuseExistingChunk: true,
+            priority: 30,
+          },
           vendor: {
-            test: /[\\/]node_modules[\\/]/,
-            name(module) {
-              // get the name. E.g. node_modules/packageName/not/this/part.js
-              // or node_modules/packageName
-              const packageName = module.context.match(
-                /[\\/]node_modules[\\/](.*?)([\\/]|$)/
-              )[1];
-
-              // npm package names are URL-safe, but some servers don't like @ symbols
-              return `npm.${packageName.replace('@', '')}`;
+            // name of the chunk
+            name: 'vendor',
+            // async + async chunks
+            chunks: 'all',
+            // import file path containing node_modules
+            test: /node_modules/,
+            // priority
+            priority: 20,
+            reuseExistingChunk: true,
+          },
+          utils: {
+            test(module, chunks) {
+              // `module.resource` contains the absolute path of the file on disk.
+              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
+              // const path = require("path");
+              return module.resource && module.resource.includes(`utils/`);
             },
+            chunks: 'all',
+            reuseExistingChunk: true,
+          },
+          commons: {
+            test(module, chunks) {
+              // `module.resource` contains the absolute path of the file on disk.
+              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
+              // const path = require("path");
+              return (
+                module.resource && module.resource.includes(`ui/components`)
+              );
+            },
+            chunks: 'all',
+            reuseExistingChunk: true,
           },
         },
       },
