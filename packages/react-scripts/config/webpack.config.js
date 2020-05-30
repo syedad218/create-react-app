@@ -287,51 +287,7 @@ module.exports = function (webpackEnv) {
       // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
       splitChunks: {
         chunks: 'all',
-        maxInitialRequests: Infinity,
-        minSize: 0,
-        cacheGroups: {
-          vendors: false,
-          bigVendor: {
-            test: /[\\/]node_modules[\\/](react|react-dom|pusher-js|core-js|yup|styled-components|redux-saga)[\\/]/,
-            name: 'bigVendor',
-            chunks: 'all',
-            reuseExistingChunk: true,
-            priority: 30,
-          },
-          vendor: {
-            // name of the chunk
-            name: 'vendor',
-            // async + async chunks
-            chunks: 'all',
-            // import file path containing node_modules
-            test: /node_modules/,
-            // priority
-            priority: 20,
-            reuseExistingChunk: true,
-          },
-          utils: {
-            test(module, chunks) {
-              // `module.resource` contains the absolute path of the file on disk.
-              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
-              // const path = require("path");
-              return module.resource && module.resource.includes(`utils/`);
-            },
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-          commons: {
-            test(module, chunks) {
-              // `module.resource` contains the absolute path of the file on disk.
-              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
-              // const path = require("path");
-              return (
-                module.resource && module.resource.includes(`ui/components`)
-              );
-            },
-            chunks: 'all',
-            reuseExistingChunk: true,
-          },
-        },
+        name: false,
       },
       // Keep the runtime chunk separated to enable long term caching
       // https://twitter.com/wSokra/status/969679223278505985
