@@ -33,6 +33,9 @@ const ModuleNotFoundPlugin = require('react-dev-utils/ModuleNotFoundPlugin');
 const ForkTsCheckerWebpackPlugin = require('react-dev-utils/ForkTsCheckerWebpackPlugin');
 const typescriptFormatter = require('react-dev-utils/typescriptFormatter');
 const ReactRefreshWebpackPlugin = require('@pmmmwh/react-refresh-webpack-plugin');
+// const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+//   .BundleAnalyzerPlugin;
+
 // @remove-on-eject-begin
 const getCacheIdentifier = require('react-dev-utils/getCacheIdentifier');
 // @remove-on-eject-end
@@ -287,7 +290,59 @@ module.exports = function (webpackEnv) {
       // https://medium.com/webpack/webpack-4-code-splitting-chunk-graph-and-the-splitchunks-optimization-be739a861366
       splitChunks: {
         chunks: 'all',
-        name: false,
+        cacheGroups: {
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+            filename: 'static/js/[name].[contenthash:8].js',
+            enforce: true,
+            priority: 20,
+          },
+          commons: {
+            test(module) {
+              // `module.resource` contains the absolute path of the file on disk.
+              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
+              // const path = require("path");
+              return (
+                module.resource &&
+                (module.resource.includes(`${path.sep}utils${path.sep}`) ||
+                  module.resource.includes(
+                    `${path.sep}components${path.sep}`
+                  ) ||
+                  module.resource.includes(`${path.sep}constants`) ||
+                  module.resource.includes(`${path.sep}common`) ||
+                  module.resource.includes(`${path.sep}styles`))
+              );
+            },
+            chunks: 'all',
+            reuseExistingChunk: true,
+            name: 'commons',
+            filename: 'static/js/[name].[contenthash:8].js',
+            enforce: true,
+            priority: 10,
+          },
+          reduxComponents: {
+            test(module) {
+              // `module.resource` contains the absolute path of the file on disk.
+              // Note the usage of `path.sep` instead of / or \, for cross-platform compatibility.
+              // const path = require("path");
+              return (
+                module.resource &&
+                (module.resource.includes(`${path.sep}saga`) ||
+                  module.resource.includes(`${path.sep}actions`) ||
+                  module.resource.includes(`${path.sep}reducer`) ||
+                  module.resource.includes(`${path.sep}selectors`))
+              );
+            },
+            chunks: 'all',
+            reuseExistingChunk: true,
+            name: 'reduxComponents',
+            filename: 'static/js/[name].[contenthash:8].js',
+            enforce: true,
+            priority: 5,
+          },
+        },
       },
       // Keep the runtime chunk separated to enable long term caching
       // https://twitter.com/wSokra/status/969679223278505985
@@ -384,13 +439,24 @@ module.exports = function (webpackEnv) {
             // "url" loader works like "file" loader except that it embeds assets
             // smaller than specified limit in bytes as data URLs to avoid requests.
             // A missing `test` is equivalent to a match.
+            // {
+            //   test: /\.(png|svg|jpe?g|gif)$/i,
+            //   loader: require.resolve("url-loader"),
+            //   options: {
+            //     limit: 8192,
+            //     name: "static/media/[name].[hash:8].[ext]",
+            //   },
+            // },
             {
-              test: [/\.bmp$/, /\.gif$/, /\.jpe?g$/, /\.png$/],
-              loader: require.resolve('url-loader'),
-              options: {
-                limit: imageInlineSizeLimit,
-                name: 'static/media/[name].[hash:8].[ext]',
-              },
+              test: /\.(png|svg|jpe?g|gif)$/i,
+              use: [
+                {
+                  loader: require.resolve('file-loader'),
+                  options: {
+                    name: 'static/media/[name].[hash:8].[ext]',
+                  },
+                },
+              ],
             },
             // Process application JS with Babel.
             // The preset includes JSX, Flow, TypeScript, and some ESnext features.
@@ -631,6 +697,8 @@ module.exports = function (webpackEnv) {
       // during a production build.
       // Otherwise React will be compiled in the very slow development mode.
       new webpack.DefinePlugin(env.stringified),
+      //bundle analyzer plugin
+      // new BundleAnalyzerPlugin(),
       // This is necessary to emit hot updates (currently CSS only):
       isEnvDevelopment && new webpack.HotModuleReplacementPlugin(),
       // Experimental hot reloading for React .
